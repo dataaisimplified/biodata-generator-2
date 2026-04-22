@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Biodata Generator</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+
+/* ===== GLOBAL ===== */
+body {
+  margin:0;
+  font-family:Poppins;
+  display:flex;
+  flex-direction:column;
+}
+
+@media(min-width:768px){
+  body { flex-direction:row; }
+}
+
+/* ===== FORM ===== */
+.form {
+  width:100%;
+  max-width:340px;
+  padding:15px;
+  background:#fff;
+  border-right:1px solid #ddd;
+}
+
+.field {
+  display:flex;
+  flex-direction:column;
+  margin-bottom:12px;
+}
+
+.field input,
+.field textarea,
+.field select {
+  padding:8px;
+  margin-top:5px;
+  border:1px solid #ccc;
+  border-radius:5px;
+}
+
+button {
+  padding:10px;
+  margin:5px 0;
+  border:none;
+  background:#2c3e50;
+  color:#fff;
+  border-radius:5px;
+  cursor:pointer;
+}
+
+/* ===== PREVIEW ===== */
+.preview {
+  flex:1;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  background:#eee;
+  padding:10px;
+  overflow:auto;
+}
+
+/* ===== BIODATA ===== */
+.biodata {
+  width:100%;
+  max-width:800px;
+  padding:20px;
+  box-sizing:border-box;
+}
+
+.inner {
+  border:2px solid currentColor;
+  padding:20px;
+}
+
+.header {
+  text-align:center;
+  font-family:'Playfair Display';
+  margin-bottom:20px;
+}
+
+/* ===== DESKTOP ===== */
+.content {
+  display:flex;
+  gap:20px;
+  align-items:flex-start;
+}
+
+.details { flex:1; }
+
+.row {
+  display:flex;
+  margin:8px 0;
+}
+
+.label { width:140px; }
+.colon { width:10px; }
+.value { flex:1; word-break:break-word; }
+
+.section-title {
+  margin-top:15px;
+  font-weight:bold;
+  border-bottom:1px solid currentColor;
+}
+
+/* IMAGE */
+.photo-box {
+  width:180px;
+  height:220px;
+  border:3px solid currentColor;
+}
+
+.photo-box img {
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+/* ===== MOBILE GRID ===== */
+@media(max-width:768px){
+  .content {
+    display:grid;
+    grid-template-columns: 1fr 120px;
+    gap:10px;
+  }
+
+  .details { grid-column:1; }
+
+  .photo-box {
+    grid-column:2;
+    width:120px;
+    height:160px;
+  }
+
+  .label { width:110px; font-size:13px; }
+  .value { font-size:13px; }
+}
+
+/* ===== FORCE FLEX FOR PDF ===== */
+.force-flex {
+  display:flex !important;
+  flex-direction:row !important;
+}
+
+/* ===== TEMPLATES ===== */
+.template-royal-red { background:linear-gradient(#7a0c0c,#3a0606); color:#f5d08a; border:10px solid #e6b566; }
+.template-royal-gold { background:#fff8e1; color:#5a3e1b; border:10px solid gold; }
+.template-maharaja { background:#5a0f0f; color:#ffd700; border:10px solid #ffd700; }
+.template-temple { background:#fff8e7; color:#5c3d00; border:8px solid #c9a227; }
+.template-floral { background:#fff0f5; color:#8b004b; border:6px solid #ff69b4; }
+
+.template-minimal { background:#fff; color:#000; }
+.template-modern-dark { background:#0f172a; color:#e2e8f0; border:2px solid #334155; }
+.template-pastel { background:#fef6ff; color:#6b21a8; border:4px solid #d8b4fe; }
+.template-elegant { background:#f5f5f5; color:#333; border:2px solid #bbb; }
+.template-blue { background:linear-gradient(#2196f3,#1565c0); color:#fff; border:6px solid #ddd; }
+
+</style>
+</head>
+
+<body>
+
+<div class="form">
+
+<h3>Biodata Builder</h3>
+
+<select id="templateSelect">
+  <option value="royal-red">Royal Red</option>
+  <option value="royal-gold">Royal Gold</option>
+  <option value="maharaja">Maharaja</option>
+  <option value="temple">Temple</option>
+  <option value="floral">Floral</option>
+  <option value="minimal">Minimal</option>
+  <option value="modern-dark">Modern Dark</option>
+  <option value="pastel">Pastel</option>
+  <option value="elegant">Elegant</option>
+  <option value="blue">Blue</option>
+</select>
+
+<div id="fields"></div>
+
+<button onclick="addField()">+ Add Field</button>
+
+<input type="file" id="photo">
+
+<button onclick="downloadPDF()">Download PDF</button>
+<button onclick="downloadImage()">Download Image</button>
+
+</div>
+
+<div class="preview">
+
+<div id="biodata" class="biodata template-blue">
+
+<div class="inner">
+
+<div class="header">ॐ श्री गणेशाय नमः</div>
+
+<div class="content" id="content">
+
+<div class="details">
+<div id="basic"></div>
+
+<div class="section-title">Family Details</div>
+<div id="family"></div>
+
+<div class="section-title">Contact Details</div>
+<div id="contact"></div>
+</div>
+
+<div class="photo-box">
+<img id="previewPhoto">
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+/* DEFAULT FIELDS */
+const defaults = [
+["Name","basic"],
+["Date of Birth","basic"],
+["Time Of Birth","basic"],
+["Place Of Birth","basic"],
+["Height","basic"],
+["Weight","basic"],
+["Complexion","basic"],
+["Caste","basic"],
+["Gotra","basic"],
+["Education","basic"],
+["Occupation","basic"],
+["Languages","basic"],
+["Hobby","basic"],
+["Father's Name","family"],
+["Father's Occupation","family"],
+["Mother's Name","family"],
+["Mother's Occupation","family"],
+["Phone","contact"],
+["Address","contact"],
+["Email","contact"]
+];
+
+window.onload = init;
+
+function init(){
+  fields.innerHTML="";
+  defaults.forEach(f=>createField(f[0],f[1]));
+  loadTemplate();
+  loadPhoto();
+  update();
+}
+
+function createField(label,section){
+  const div=document.createElement("div");
+  div.className="field";
+  div.innerHTML=`
+    <input value="${label}">
+    <textarea></textarea>
+    <select>
+      <option value="basic">Basic</option>
+      <option value="family">Family</option>
+      <option value="contact">Contact</option>
+    </select>
+  `;
+  fields.appendChild(div);
+}
+
+function addField(){
+  createField("New Field","basic");
+}
+
+document.addEventListener("input", update);
+
+function update(){
+  basic.innerHTML="";
+  family.innerHTML="";
+  contact.innerHTML="";
+
+  document.querySelectorAll(".field").forEach(f=>{
+    const label=f.children[0].value;
+    const value=f.children[1].value.replace(/\n/g,"<br>");
+    const section=f.children[2].value;
+
+    if(label && value){
+      const row=`<div class="row">
+        <div class="label">${label}</div>
+        <div class="colon">:</div>
+        <div class="value">${value}</div>
+      </div>`;
+
+      if(section==="basic") basic.innerHTML+=row;
+      if(section==="family") family.innerHTML+=row;
+      if(section==="contact") contact.innerHTML+=row;
+    }
+  });
+}
+
+/* TEMPLATE */
+templateSelect.onchange = ()=>{
+  biodata.className="biodata template-"+templateSelect.value;
+  localStorage.setItem("template",templateSelect.value);
+};
+
+function loadTemplate(){
+  const t=localStorage.getItem("template")||"blue";
+  templateSelect.value=t;
+  biodata.className="biodata template-"+t;
+}
+
+/* PHOTO */
+photo.onchange = e=>{
+  const reader=new FileReader();
+  reader.onload=e=>{
+    previewPhoto.src=e.target.result;
+    localStorage.setItem("photo",e.target.result);
+  };
+  reader.readAsDataURL(e.target.files[0]);
+};
+
+function loadPhoto(){
+  const p=localStorage.getItem("photo");
+  if(p) previewPhoto.src=p;
+}
+
+/* PDF */
+async function downloadPDF(){
+  const { jsPDF } = window.jspdf;
+  const contentEl = document.getElementById("content");
+
+  contentEl.classList.add("force-flex");
+
+  const canvas = await html2canvas(biodata,{scale:2});
+  const img = canvas.toDataURL("image/png");
+
+  const pdf = new jsPDF("p","mm","a4");
+  pdf.addImage(img,"PNG",0,0,210,297);
+  pdf.save("biodata.pdf");
+
+  contentEl.classList.remove("force-flex");
+}
+
+/* IMAGE */
+function downloadImage(){
+  const contentEl = document.getElementById("content");
+
+  contentEl.classList.add("force-flex");
+
+  html2canvas(biodata,{scale:2}).then(canvas=>{
+    const link=document.createElement("a");
+    link.download="biodata.png";
+    link.href=canvas.toDataURL();
+    link.click();
+
+    contentEl.classList.remove("force-flex");
+  });
+}
+
+</script>
+
+</body>
+</html>
