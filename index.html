@@ -233,7 +233,7 @@ button {
 <script>
 
 /* DEFAULT FIELDS */
-const defaults = [
+const defaultFields = [
 ["Name","basic"],
 ["Date of Birth","basic"],
 ["Time Of Birth","basic"],
@@ -247,10 +247,12 @@ const defaults = [
 ["Occupation","basic"],
 ["Languages","basic"],
 ["Hobby","basic"],
+
 ["Father's Name","family"],
 ["Father's Occupation","family"],
 ["Mother's Name","family"],
 ["Mother's Occupation","family"],
+
 ["Phone","contact"],
 ["Address","contact"],
 ["Email","contact"]
@@ -260,7 +262,7 @@ window.onload = init;
 
 function init(){
   fields.innerHTML="";
-  defaults.forEach(f=>createField(f[0],f[1]));
+  defaultFields.forEach(f=>createField(f[0],f[1]));
   loadTemplate();
   loadPhoto();
   update();
@@ -269,15 +271,17 @@ function init(){
 function createField(label,section){
   const div=document.createElement("div");
   div.className="field";
+
   div.innerHTML=`
     <input value="${label}">
     <textarea></textarea>
     <select>
-      <option value="basic">Basic</option>
-      <option value="family">Family</option>
-      <option value="contact">Contact</option>
+      <option value="basic" ${section==="basic"?"selected":""}>Basic</option>
+      <option value="family" ${section==="family"?"selected":""}>Family</option>
+      <option value="contact" ${section==="contact"?"selected":""}>Contact</option>
     </select>
   `;
+
   fields.appendChild(div);
 }
 
